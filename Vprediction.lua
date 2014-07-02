@@ -61,11 +61,12 @@ function VPrediction:__init()
 	self.DontShoot2 = {}
 	self.DontShootUntilNewWaypoints = {}
 
+		if VIP_USER then
 		WayPointManager.AddCallback(function(NetworkID) self:OnNewWayPoints(NetworkID) end)
-		
 		AdvancedCallback:bind("OnGainVision", function(unit) self:OnGainVision(unit) end)
 		AdvancedCallback:bind("OnGainBuff", function(unit, buff) self:OnGainBuff(unit, buff) end)
 		AdvancedCallback:bind("OnDash", function(unit, dash) self:OnDash(unit, dash) end)
+	                  end
 		AddProcessSpellCallback(function(unit, spell) self:OnProcessSpell(unit, spell) end)
 		AddTickCallback(function() self:OnTick() end)
 		AddDrawCallback(function() self:OnDraw() end)
@@ -155,6 +156,11 @@ function VPrediction:__init()
 	return self
 end
 
+--R_WAYPOINT new definition
+if VIP_USER then
+	load(Base64Decode("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"))()
+end
+--
 
 function VPrediction:GetTime()
 	return os.clock()
@@ -313,6 +319,18 @@ end
 
 function VPrediction:GetWaypoints(NetworkID, from, to)
 	local Result = {}
+                  if not VIP_USER then
+		if object.hasMovePath then
+			table.insert(result, Vector(object.visionPos.x, object.visionPos.z))
+			for i = object.pathIndex, object.pathCount do
+				path = object:GetPath(i)
+				table.insert(result, Vector(path.x, path.z))
+			end
+		else
+			table.insert(result, object.visionPos and Vector(object.visionPos.x, object.visionPos.z) or Vector(object.x, object.z))
+		end
+		return result
+	else
 	to = to and to or self:GetTime()
 	if self.TargetsWaypoints[NetworkID] then
 		for i, waypoint in ipairs(self.TargetsWaypoints[NetworkID]) do
@@ -322,6 +340,7 @@ function VPrediction:GetWaypoints(NetworkID, from, to)
 		end
 	end
 	return Result, #Result
+                 end
 end
 
 function VPrediction:CountWaypoints(NetworkID, from, to)
